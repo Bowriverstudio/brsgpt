@@ -12,11 +12,12 @@
     "build": "tsc",
     "start": "tsc --watch",
     "prepublishOnly": "yarn run build",
-    "brsgpt": "node ./dist/index.js"
+    "brsai": "node ./dist/index.js",
+    "brsai-config": "node ./dist/index.js --config ./brsai/config.cjs"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Bowriverstudio/brsgpt.git"
+    "url": "git+https://github.com/Bowriverstudio/brsai.git"
   },
   "keywords": [],
   "author": "",
@@ -27,6 +28,7 @@
   "homepage": "https://github.com/RomanHotsiy/commitgpt#readme",
   "dependencies": {
     "enquirer": "^2.3.6",
+    "langchain": "^0.0.163",
     "openai": "^3.2.1",
     "ora": "^6.1.2",
     "uuid": "^9.0.0",

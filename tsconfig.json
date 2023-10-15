@@ -11,7 +11,7 @@
     },
     "include": [
       "src/**/*.ts"
-    ],
+, "src/client.backup", "src/commit.backup"    ],
     "exclude": [
       "node_modules"
     ]
