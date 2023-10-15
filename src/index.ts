@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 
 import pkg from 'enquirer';
+//@ts-ignore
 const { prompt, Select } = pkg;
 import chalk from 'chalk';
-
+import { spawn } from "child_process"
 import commands from "./commands.js"
 
 interface PromptResult {
@@ -12,22 +13,18 @@ interface PromptResult {
 
 async function main() {
     const userCommand = process.argv[2];
+    const userArgs = process.argv.slice(3); // Get arguments after the command
 
     if (userCommand) {
         const isValidCommand = commands.some(cmd => cmd.command === userCommand);
-        if (!isValidCommand) {
-            console.log(`'yarn brsai ${userCommand}' is not a valid command. Please use one of the following:`);
-            displayAvailableCommands();
+        if (isValidCommand) {
+            executeCommand(userCommand, userArgs);
+        } else {
+            promptForCommand();
         }
     } else {
         await promptForCommand();
     }
-}
-
-function displayAvailableCommands() {
-    commands.forEach(({ command, description }) => {
-        console.log(`yarn brsai ${command} - ${description}`);
-    });
 }
 
 const getHint = (index) => {
@@ -48,19 +45,25 @@ async function promptForCommand() {
 
     });
 
-    selectPrompt.on('pointer', (choice) => {
-        console.log(`You selected: ${choice.value}`);
-        const selectedCommand = commands.find(cmd => cmd.command === choice.value);
-        if (selectedCommand && selectedCommand.description) {
-            // Update the hint based on the highlighted choice
-            selectPrompt.options.hint = selectedCommand.description;
-            // Redraw the prompt to display the updated hint
-            selectPrompt.render();
-        }
-    });
-
     const response = await selectPrompt.run();
     console.log(`You selected: ${response}`);
+    executeCommand(response);
+}
+
+function executeCommand(command, args = []) {
+    const scriptPath = `./dist/scripts/${command}.js`;
+    const child = spawn('node', [scriptPath, ...args], {
+        stdio: 'inherit'  // This will ensure that the script's output is displayed in the main process
+    });
+
+    child.on('error', (err) => {
+        console.error(`Failed to execute script: ${scriptPath}`);
+        console.error(err);
+    });
+
+    child.on('exit', (code) => {
+        console.log(`Script ${scriptPath} exited with code ${code}`);
+    });
 }
 
 main().catch(console.error);

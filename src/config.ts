@@ -1,32 +1,32 @@
-import enquirer from "enquirer";
-
 import fs from 'fs';
+import { promises as fsPromises } from 'fs';
 
-const LOCAL_CONFIG_PATH = `${process.cwd()}/.brsgpt/config.cjs`;
+type BrsAiConfig = {
+    apiKey: string;
+    model: string;
+    temperature: number;
+    maxTokens: number;
+};
 
 
-// if (fs.existsSync(LOCAL_CONFIG_PATH)) {
-//     console.log(`${LOCAL_CONFIG_PATH} exists!`);
-// } else {
-//     console.log(`${LOCAL_CONFIG_PATH} does not exist.`);
-// }
+const LOCAL_CONFIG_PATH = `${process.cwd()}/.brsai/config.cjs`;
 
-export const getConfig = async () => {
-    if (fs.existsSync(LOCAL_CONFIG_PATH)) {
-        import(`${LOCAL_CONFIG_PATH}`).then((config) => {
-            console.log("CONFIG", config);
-        }).catch((error) => {
+export const getConfig = async (): Promise<BrsAiConfig | false> => {
+    if (await fsPromises.access(LOCAL_CONFIG_PATH, fs.constants.F_OK).then(() => true).catch(() => false)) {
+        try {
+            const importedConfig = await import(`${LOCAL_CONFIG_PATH}`);
+            const config: BrsAiConfig = importedConfig.default || importedConfig;
+
+            return config;
+        } catch (error) {
             console.error("Error importing config:", error);
-        });
+            return false;
+        }
     } else {
-        // @todo add setup code.
         console.error(`${LOCAL_CONFIG_PATH} does not exist.`);
         return false;
     }
-
-
-    console.log("CommitGPT 🤖");
-}
+};
 
 // import { getConfig, setGlobalConfig } from "./config_storage.js";
 
